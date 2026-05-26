@@ -15,12 +15,14 @@ interface Props {
   id: string;
   name: string;
   color?: string;
+  published?: boolean;
   onRename: (id: string, newName: string) => void;
   onDelete: (id: string, deleteContents: boolean) => void;
   onColor: (id: string, color: string) => void;
+  onTogglePublished: (id: string, published: boolean) => void;
 }
 
-export default function FolderCard({ id, name, color, onRename, onDelete, onColor }: Props) {
+export default function FolderCard({ id, name, color, published, onRename, onDelete, onColor, onTogglePublished }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(name);
@@ -136,6 +138,13 @@ export default function FolderCard({ id, name, color, onRename, onDelete, onColo
                          transition-colors"
             >
               重命名
+            </button>
+            <button
+              onClick={() => { onTogglePublished(id, !published); setMenuOpen(false); }}
+              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50
+                         transition-colors"
+            >
+              {published ? '🔓 已公开' : '🔒 设为公开'}
             </button>
             <button
               onClick={handleClickDelete}

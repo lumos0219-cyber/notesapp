@@ -5,6 +5,7 @@ export interface Folder {
   createdAt: number;
   color?: string;
   order?: number;
+  published?: boolean;
 }
 
 export interface Attachment {
@@ -26,6 +27,7 @@ export interface Note {
   createdAt: number;
   updatedAt: number;
   order?: number;
+  published?: boolean;
 }
 
 export interface CorrectionEntry {

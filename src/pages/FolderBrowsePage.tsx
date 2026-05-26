@@ -259,9 +259,14 @@ export default function FolderBrowsePage() {
                   id={f.id}
                   name={f.name}
                   color={f.color}
+                  published={f.published}
                   onRename={handleRenameFolder}
                   onDelete={handleDeleteFolder}
                   onColor={handleFolderColor}
+                  onTogglePublished={async (id, published) => {
+                    await db.folders.update(id, { published });
+                    loadData();
+                  }}
                 />
               </div>
             ))}
