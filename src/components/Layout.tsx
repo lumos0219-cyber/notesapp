@@ -1,41 +1,35 @@
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
-function useNavGuard() {
-  const navigate = useNavigate();
-  return (to: string, e: React.MouseEvent) => {
-    if (sessionStorage.getItem('klog_dirty')) {
-      e.preventDefault();
-      const ok = confirm('有未保存的修改，确定要离开吗？');
-      if (ok) {
-        sessionStorage.removeItem('klog_dirty');
-        navigate(to);
-      }
-    }
-  };
+function navTo(hash: string) {
+  if (sessionStorage.getItem('klog_dirty')) {
+    const ok = confirm('有未保存的修改，确定要离开吗？');
+    if (!ok) return;
+    sessionStorage.removeItem('klog_dirty');
+  }
+  window.location.hash = hash;
 }
 
 export default function Layout() {
   const location = useLocation();
   const isRoot = location.pathname === '/';
   const isAll = location.pathname === '/all';
-  const guard = useNavGuard();
 
   return (
     <div className="min-h-screen flex flex-col">
       <nav className="bg-white border-b border-blue-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link
-            to="/"
-            onClick={(e) => guard('/', e)}
+          <a
+            href="#/"
+            onClick={(e) => { e.preventDefault(); navTo('#/'); }}
             className="text-xl font-bold no-underline font-mono tracking-wide
                        bg-gradient-to-r from-blue-700 to-blue-400 bg-clip-text text-transparent"
           >
             Klog
-          </Link>
+          </a>
           <div className="flex gap-1">
-            <Link
-              to="/"
-              onClick={(e) => guard('/', e)}
+            <a
+              href="#/"
+              onClick={(e) => { e.preventDefault(); navTo('#/'); }}
               className={`text-sm px-3 py-1.5 rounded-lg no-underline transition-colors ${
                 isRoot || location.pathname.startsWith('/?folder=')
                   ? 'bg-blue-50 text-blue-700 font-medium'
@@ -43,10 +37,10 @@ export default function Layout() {
               }`}
             >
               文件夹
-            </Link>
-            <Link
-              to="/all"
-              onClick={(e) => guard('/all', e)}
+            </a>
+            <a
+              href="#/all"
+              onClick={(e) => { e.preventDefault(); navTo('#/all'); }}
               className={`text-sm px-3 py-1.5 rounded-lg no-underline transition-colors ${
                 isAll
                   ? 'bg-blue-50 text-blue-700 font-medium'
@@ -54,7 +48,7 @@ export default function Layout() {
               }`}
             >
               全部笔记
-            </Link>
+            </a>
           </div>
         </div>
       </nav>
