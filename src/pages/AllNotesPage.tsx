@@ -71,6 +71,8 @@ export default function AllNotesPage() {
     if (!preview) return;
     setPublishing(true);
     setPreview(null);
+    // Keep loading visible at least 1s
+    const minWait = new Promise((r) => setTimeout(r, 1000));
     try {
       const resp = await fetch('/api/publish', {
         method: 'POST',
@@ -86,6 +88,7 @@ export default function AllNotesPage() {
     } catch {
       setPublishMsg({ type: 'error', text: '发布失败，请重试' });
     }
+    await minWait;
     setPublishing(false);
     loadNotes();
   };
