@@ -22,6 +22,7 @@ export default function EditNotePage() {
   const [toast, setToast] = useState('');
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [readonly, setReadonly] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -52,6 +53,7 @@ export default function EditNotePage() {
         folderId,
         updatedAt: Date.now(),
       });
+      setDirty(false);
       setToast('保存成功');
     } catch (err) {
       console.error('[NoteSnap] Failed to save:', err);
@@ -149,6 +151,11 @@ export default function EditNotePage() {
           {toast && (
             <span className="text-sm text-green-600 font-medium">{toast}</span>
           )}
+          {dirty && (
+            <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full font-medium">
+              未保存
+            </span>
+          )}
           {/* Edit / Read-only segmented control */}
           <div className="flex bg-gray-100 rounded-lg p-0.5">
             <button
@@ -194,7 +201,7 @@ export default function EditNotePage() {
         <input
           type="text"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => { setTitle(e.target.value); setDirty(true); }}
           placeholder="笔记标题"
           className="w-full text-lg font-semibold text-gray-800 px-3 py-2 bg-transparent
                      border-b border-gray-100 focus:outline-none focus:border-blue-300
