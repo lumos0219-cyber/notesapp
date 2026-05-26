@@ -74,37 +74,39 @@ export default function EditNotePage() {
     );
   }, [note, readonly, title, content, images, attachments, tags, folderId]);
 
+  // Sync dirty state to sessionStorage so Layout can check it
+  useEffect(() => {
+    if (isDirty()) {
+      sessionStorage.setItem('klog_dirty', '1');
+    } else {
+      sessionStorage.removeItem('klog_dirty');
+    }
+  });
+
+  // Clean up dirty flag on unmount (safe navigation via back button)
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('klog_dirty');
+    };
+  }, []);
+
   // Warn before closing/refreshing browser
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty()) {
+      if (sessionStorage.getItem('klog_dirty')) {
         e.preventDefault();
       }
     };
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty]);
-
-  // Intercept hash navigation (navbar links)
-  useEffect(() => {
-    const onHashChange = (e: HashChangeEvent) => {
-      if (isDirty()) {
-        const ok = confirm('有未保存的修改，确定要离开吗？');
-        if (!ok) {
-          // Restore the edit page hash
-          window.location.hash = e.oldURL.split('#')[1] || '';
-        }
-      }
-    };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, [isDirty]);
+  }, []);
 
   const handleBack = () => {
     if (isDirty()) {
       const ok = confirm('有未保存的修改，确定要离开吗？');
       if (!ok) return;
     }
+    sessionStorage.removeItem('klog_dirty');
     navigate(folderId ? `/?folder=${folderId}` : '/');
   };
 
