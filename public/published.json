@@ -1,1 +1,25 @@
-{"folders":[],"notes":[]}
+{
+  "folders": [
+    {
+      "id": "4aa95156-2f9f-4e57-80cd-9cddc0f83400",
+      "name": "test",
+      "parentId": null,
+      "createdAt": 1779785205194,
+      "published": true
+    }
+  ],
+  "notes": [
+    {
+      "id": "08665ae1-afb2-4c8d-a9ad-17369b519e5f",
+      "title": "test",
+      "content": "<p>test</p>",
+      "images": [],
+      "attachments": [],
+      "folderId": "4aa95156-2f9f-4e57-80cd-9cddc0f83400",
+      "tags": [],
+      "createdAt": 1779785855070,
+      "updatedAt": 1779786634103,
+      "published": true
+    }
+  ]
+}
