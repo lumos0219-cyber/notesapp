@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { isLocalhost } from '../lib/env';
 
 interface Props {
   id: string;
@@ -49,14 +50,16 @@ export default function NoteCard({ id, title, content, tags, imageCount, publish
             {stripPreview(content) || '无摘录'}
           </p>
         </div>
-        <button
-          onClick={handleDelete}
-          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500
-                     transition-all text-lg leading-none px-1"
-          title="删除"
-        >
-          ×
-        </button>
+        {isLocalhost() && (
+          <button
+            onClick={handleDelete}
+            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500
+                       transition-all text-lg leading-none px-1"
+            title="删除"
+          >
+            ×
+          </button>
+        )}
       </div>
       <div className="flex items-center gap-2 mt-3">
         <span className="text-xs text-gray-300">{date}</span>

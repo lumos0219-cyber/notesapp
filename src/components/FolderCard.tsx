@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { isLocalhost } from '../lib/env';
 
 const COLORS = [
   { value: '', label: '默认' },
@@ -122,7 +123,8 @@ export default function FolderCard({ id, name, color, published, onRename, onDel
         </Link>
       )}
 
-      {/* ⋮ Menu button */}
+      {/* ⋮ Menu button — only on localhost */}
+      {isLocalhost() && (
       <div ref={menuRef} className="relative shrink-0">
         <button
           onClick={(e) => { e.preventDefault(); setMenuOpen(!menuOpen); }}
@@ -176,6 +178,7 @@ export default function FolderCard({ id, name, color, published, onRename, onDel
           </div>
         )}
       </div>
+      )}
 
       {/* Delete confirmation modal */}
       {showDelete && (

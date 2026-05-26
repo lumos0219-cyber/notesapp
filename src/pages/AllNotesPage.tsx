@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { db } from '../db';
 import type { Note } from '../types';
 import NoteCard from '../components/NoteCard';
+import { isLocalhost } from '../lib/env';
 import { exportAll, importData } from '../lib/transfer';
 
 type SortMode = 'updated-desc' | 'updated-asc' | 'title-asc';
@@ -69,32 +70,36 @@ export default function AllNotesPage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-lg font-bold text-gray-800">全部笔记</h1>
         <div className="flex items-center gap-2">
-          <button
-            onClick={exportAll}
-            className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
-          >
-            导出
-          </button>
-          <button
-            onClick={() => importRef.current?.click()}
-            className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
-          >
-            导入
-          </button>
-          <input
-            ref={importRef}
-            type="file"
-            accept=".klog,application/json"
-            className="hidden"
-            onChange={handleImport}
-          />
-          <Link
-            to="/notes/new"
-            className="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium
-                       hover:bg-blue-600 transition-colors no-underline"
-          >
-            + 新笔记
-          </Link>
+          {isLocalhost() && (
+            <>
+              <button
+                onClick={exportAll}
+                className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
+              >
+                导出
+              </button>
+              <button
+                onClick={() => importRef.current?.click()}
+                className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
+              >
+                导入
+              </button>
+              <input
+                ref={importRef}
+                type="file"
+                accept=".klog,application/json"
+                className="hidden"
+                onChange={handleImport}
+              />
+              <Link
+                to="/notes/new"
+                className="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium
+                           hover:bg-blue-600 transition-colors no-underline"
+              >
+                + 新笔记
+              </Link>
+            </>
+          )}
         </div>
       </div>
 

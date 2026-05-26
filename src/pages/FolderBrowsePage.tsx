@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { db } from '../db';
 import type { Note, Folder } from '../types';
 import { generateId } from '../lib/uuid';
+import { isLocalhost } from '../lib/env';
 import { exportFolder } from '../lib/transfer';
 import NoteCard from '../components/NoteCard';
 import FolderCard from '../components/FolderCard';
@@ -207,7 +208,7 @@ export default function FolderBrowsePage() {
       {/* Sort + Actions bar */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-1">
-          {(['updated-desc', 'updated-asc', 'title-asc', 'custom'] as SortMode[]).map((m) => (
+          {(['updated-desc', 'updated-asc', 'title-asc', ...(isLocalhost() ? ['custom' as SortMode] : [])] as SortMode[]).map((m) => (
             <button
               key={m}
               onClick={() => setSort(m)}
@@ -222,21 +223,25 @@ export default function FolderBrowsePage() {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          {folderId && (
-            <button
-              onClick={() => exportFolder(folderId)}
-              className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              导出
-            </button>
+          {isLocalhost() && (
+            <>
+              {folderId && (
+                <button
+                  onClick={() => exportFolder(folderId)}
+                  className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                >
+                  导出
+                </button>
+              )}
+              <Link
+                to={`/notes/new${folderId ? `?folder=${folderId}` : ''}`}
+                className="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium
+                           hover:bg-blue-600 transition-colors no-underline"
+              >
+                + 新笔记
+              </Link>
+            </>
           )}
-          <Link
-            to={`/notes/new${folderId ? `?folder=${folderId}` : ''}`}
-            className="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium
-                       hover:bg-blue-600 transition-colors no-underline"
-          >
-            + 新笔记
-          </Link>
         </div>
       </div>
 
@@ -248,10 +253,10 @@ export default function FolderBrowsePage() {
             {sortedFolders.map((f, i) => (
               <div
                 key={f.id}
-                draggable
-                onDragStart={() => handleFolderDragStart(i)}
-                onDragOver={(e) => handleFolderDragOver(e, i)}
-                onDrop={(e) => handleFolderDrop(e, i)}
+                draggable={isLocalhost()}
+                onDragStart={() => isLocalhost() && handleFolderDragStart(i)}
+                onDragOver={(e) => isLocalhost() && handleFolderDragOver(e, i)}
+                onDrop={(e) => isLocalhost() && handleFolderDrop(e, i)}
                 onDragEnd={() => setDragIdx(null)}
                 className={dragIdx === i ? 'opacity-40' : ''}
               >
@@ -297,10 +302,10 @@ export default function FolderBrowsePage() {
             {sortedNotes.map((note, i) => (
               <div
                 key={note.id}
-                draggable={sort === 'custom'}
-                onDragStart={() => sort === 'custom' && handleNoteDragStart(i)}
-                onDragOver={(e) => sort === 'custom' && handleNoteDragOver(e)}
-                onDrop={(e) => sort === 'custom' && handleNoteDrop(e, i)}
+                draggable={sort === 'custom' && isLocalhost()}
+                onDragStart={() => sort === 'custom' && isLocalhost() && handleNoteDragStart(i)}
+                onDragOver={(e) => sort === 'custom' && isLocalhost() && handleNoteDragOver(e)}
+                onDrop={(e) => sort === 'custom' && isLocalhost() && handleNoteDrop(e, i)}
                 onDragEnd={() => setNoteDragIdx(null)}
                 className={noteDragIdx === i ? 'opacity-40' : ''}
               >
@@ -320,7 +325,8 @@ export default function FolderBrowsePage() {
         )}
       </div>
 
-      {/* New folder */}
+      {/* New folder — only on localhost */}
+      {isLocalhost() && (
       <div className="mt-6">
         {showNewFolder ? (
           <div className="flex gap-2">
@@ -357,6 +363,7 @@ export default function FolderBrowsePage() {
           </button>
         )}
       </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import type { Note, Folder, Attachment } from '../types';
 import RichTextEditor from '../components/RichTextEditor';
 import TagInput from '../components/TagInput';
 import AttachmentPicker, { openAttachment } from '../components/AttachmentPicker';
+import { isLocalhost } from '../lib/env';
 
 export default function EditNotePage() {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +22,7 @@ export default function EditNotePage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const [readonly, setReadonly] = useState(false);
+  const [readonly, setReadonly] = useState(!isLocalhost());
   const [published, setPublished] = useState(false);
 
   useEffect(() => {
