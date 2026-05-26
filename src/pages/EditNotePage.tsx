@@ -22,6 +22,7 @@ export default function EditNotePage() {
   const [toast, setToast] = useState('');
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [readonly, setReadonly] = useState(false);
+  const [published, setPublished] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -34,6 +35,7 @@ export default function EditNotePage() {
         setAttachments(n.attachments || []);
         setTags(n.tags || []);
         setFolderId(n.folderId);
+        setPublished(n.published || false);
       }
     });
     db.folders.toArray().then(setFolders);
@@ -50,6 +52,7 @@ export default function EditNotePage() {
         attachments,
         tags,
         folderId,
+        published,
         updatedAt: Date.now(),
       });
       setToast('保存成功');
@@ -105,6 +108,16 @@ export default function EditNotePage() {
           {toast && (
             <span className="text-sm text-green-600 font-medium">{toast}</span>
           )}
+          <button
+            onClick={() => setPublished(!published)}
+            className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+              published
+                ? 'bg-green-100 text-green-700'
+                : 'bg-gray-100 text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            {published ? '已公开' : '私密'}
+          </button>
           {/* Edit / Read-only segmented control */}
           <div className="flex bg-gray-100 rounded-lg p-0.5">
             <button
