@@ -310,6 +310,7 @@ export default function FolderBrowsePage() {
                   content={note.content}
                   tags={note.tags}
                   imageCount={note.images.length}
+                  published={note.published}
                   updatedAt={note.updatedAt}
                   onDelete={handleDeleteNote}
                 />

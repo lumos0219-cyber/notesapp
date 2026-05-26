@@ -6,6 +6,7 @@ interface Props {
   content: string;
   tags: string[];
   imageCount: number;
+  published?: boolean;
   updatedAt: number;
   onDelete: (id: string) => void;
 }
@@ -17,7 +18,7 @@ function stripPreview(html: string, maxLen = 80): string {
   return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
 }
 
-export default function NoteCard({ id, title, content, tags, imageCount, updatedAt, onDelete }: Props) {
+export default function NoteCard({ id, title, content, tags, imageCount, published, updatedAt, onDelete }: Props) {
   const date = new Date(updatedAt).toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'short',
@@ -42,6 +43,7 @@ export default function NoteCard({ id, title, content, tags, imageCount, updated
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-semibold text-gray-800 truncate">
             {title || '未命名笔记'}
+            {published && <span className="ml-2 text-[10px] text-green-600 font-normal">已公开</span>}
           </h3>
           <p className="text-sm text-gray-400 mt-1 line-clamp-2">
             {stripPreview(content) || '无摘录'}

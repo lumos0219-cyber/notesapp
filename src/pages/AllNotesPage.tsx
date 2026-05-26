@@ -161,6 +161,7 @@ export default function AllNotesPage() {
               content={note.content}
               tags={note.tags || []}
               imageCount={note.images.length}
+                  published={note.published}
               updatedAt={note.updatedAt}
               onDelete={handleDelete}
             />
