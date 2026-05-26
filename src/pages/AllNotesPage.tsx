@@ -15,7 +15,7 @@ export default function AllNotesPage() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [sort, setSort] = useState<SortMode>('updated-desc');
   const [publishing, setPublishing] = useState(false);
-  const [preview, setPreview] = useState<{ newNotes: Note[]; modifiedNotes: Note[]; removedNoteIds: string[] } | null>(null);
+  const [preview, setPreview] = useState<{ newNotes: Note[]; modifiedNotes: Note[]; removedNoteIds: string[]; folders?: any[] } | null>(null);
   const [publishMsg, setPublishMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const importRef = useRef<HTMLInputElement>(null);
 

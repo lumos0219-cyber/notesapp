@@ -25,9 +25,8 @@ export default function PublishHistoryPage() {
       (id) => !oldNoteIds.includes(id)
     );
 
-    // Fetch old note data from the gh-pages deployed files
+    // Fetch old note data from the deployed files
     const newNotes: any[] = [];
-    const modifiedNotes: any[] = [];
     for (const id of oldNoteIds) {
       try {
         const resp = await fetch(`./data/notes/${id}.json`);
