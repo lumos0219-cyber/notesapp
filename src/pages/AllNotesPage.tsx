@@ -16,6 +16,7 @@ export default function AllNotesPage() {
   const [sort, setSort] = useState<SortMode>('updated-desc');
   const [publishing, setPublishing] = useState(false);
   const [preview, setPreview] = useState<{ newNotes: Note[]; modifiedNotes: Note[]; removedNoteIds: string[] } | null>(null);
+  const [publishMsg, setPublishMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const importRef = useRef<HTMLInputElement>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,12 +79,12 @@ export default function AllNotesPage() {
       });
       const result = await resp.json();
       if (result.ok) {
-        alert('发布成功！' + (result.deployWarning ? result.deployWarning : '公开站稍后自动更新。'));
+        setPublishMsg({ type: 'success', text: result.deployWarning || '发布成功！手动运行 npm run deploy 即可上线。' });
       } else {
-        alert('发布失败：' + (result.error || '未知错误'));
+        setPublishMsg({ type: 'error', text: result.error || '未知错误' });
       }
     } catch {
-      alert('发布失败，请重试');
+      setPublishMsg({ type: 'error', text: '发布失败，请重试' });
     }
     setPublishing(false);
     loadNotes();
@@ -120,6 +121,14 @@ export default function AllNotesPage() {
               >
                 {publishing ? '发布中...' : '发布'}
               </button>
+              {publishMsg && (
+                <span
+                  className={`text-xs ${publishMsg.type === 'success' ? 'text-green-600' : 'text-red-500'}`}
+                  onClick={() => setPublishMsg(null)}
+                >
+                  {publishMsg.text}
+                </span>
+              )}
               <button
                 onClick={exportAll}
                 className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
