@@ -30,6 +30,14 @@ export interface Note {
   published?: boolean;
 }
 
+export interface PublishLogEntry {
+  id?: number;
+  timestamp: number;
+  folderCount: number;
+  noteCount: number;
+  snapshot: { folders: string[]; notes: Record<string, number> };  // folderIds + noteId→updatedAt
+}
+
 export interface CorrectionEntry {
   id?: number;
   original: string;

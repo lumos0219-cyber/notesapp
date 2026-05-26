@@ -81,6 +81,20 @@ export default function AllNotesPage() {
       });
       const result = await resp.json();
       if (result.ok) {
+        // Save publish log
+        const snapshot = {
+          folders: preview.folders ? (Array.isArray(preview.folders) ? preview.folders.map((f: any) => f.id) : []) : [],
+          notes: {} as Record<string, number>,
+        };
+        for (const n of [...preview.newNotes, ...preview.modifiedNotes]) {
+          snapshot.notes[n.id] = n.updatedAt;
+        }
+        await db.publishLog.add({
+          timestamp: Date.now(),
+          folderCount: snapshot.folders.length,
+          noteCount: Object.keys(snapshot.notes).length,
+          snapshot,
+        });
         setPublishMsg({ type: 'success', text: result.deployWarning || '发布成功！手动运行 npm run deploy 即可上线。' });
       } else {
         setPublishMsg({ type: 'error', text: result.error || '未知错误' });

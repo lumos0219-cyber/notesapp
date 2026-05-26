@@ -1,10 +1,11 @@
 import Dexie, { type Table } from 'dexie';
-import type { Note, Folder, CorrectionEntry } from './types';
+import type { Note, Folder, CorrectionEntry, PublishLogEntry } from './types';
 
 class NotesDB extends Dexie {
   notes!: Table<Note, string>;
   folders!: Table<Folder, string>;
   corrections!: Table<CorrectionEntry, number>;
+  publishLog!: Table<PublishLogEntry, number>;
 
   constructor() {
     super('KlogDB');
@@ -47,6 +48,12 @@ class NotesDB extends Dexie {
       folders: 'id, parentId, createdAt, color, order, published',
       notes: 'id, folderId, createdAt, updatedAt, order, published',
       corrections: '++id, original',
+    });
+    this.version(8).stores({
+      folders: 'id, parentId, createdAt, color, order, published',
+      notes: 'id, folderId, createdAt, updatedAt, order, published',
+      corrections: '++id, original',
+      publishLog: '++id, timestamp',
     });
   }
 

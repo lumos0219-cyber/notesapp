@@ -1,9 +1,11 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { isLocalhost } from '../lib/env';
 
 export default function Layout() {
   const location = useLocation();
   const isRoot = location.pathname === '/';
   const isAll = location.pathname === '/all';
+  const isHistory = location.pathname === '/history';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -37,6 +39,18 @@ export default function Layout() {
             >
               全部笔记
             </Link>
+            {isLocalhost() && (
+              <Link
+                to="/history"
+                className={`text-sm px-3 py-1.5 rounded-lg no-underline transition-colors ${
+                  isHistory
+                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    : 'text-gray-500 hover:bg-gray-100'
+                }`}
+              >
+                发布历史
+              </Link>
+            )}
           </div>
         </div>
       </nav>
