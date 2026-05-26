@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../db';
 import type { Note, Folder, Attachment } from '../types';
@@ -18,6 +18,7 @@ export default function EditNotePage() {
   const [tags, setTags] = useState<string[]>([]);
   const [folderId, setFolderId] = useState<string | null>(null);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const loaded = useRef(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -26,6 +27,8 @@ export default function EditNotePage() {
 
   useEffect(() => {
     if (!id) return;
+    loaded.current = false;
+    setDirty(false);
     db.notes.get(id).then((n) => {
       if (n) {
         setNote(n);
@@ -35,6 +38,8 @@ export default function EditNotePage() {
         setAttachments(n.attachments || []);
         setTags(n.tags || []);
         setFolderId(n.folderId);
+        // Wait a tick for child editors to sync, then arm dirty tracking
+        setTimeout(() => { loaded.current = true; }, 200);
       }
     });
     db.folders.toArray().then(setFolders);
@@ -180,7 +185,7 @@ export default function EditNotePage() {
         <input
           type="text"
           value={title}
-          onChange={(e) => { setTitle(e.target.value); setDirty(true); }}
+          onChange={(e) => { setTitle(e.target.value); if (loaded.current) setDirty(true); }}
           placeholder="笔记标题"
           className="w-full text-lg font-semibold text-gray-800 px-3 py-2 bg-transparent
                      border-b border-gray-100 focus:outline-none focus:border-blue-300
@@ -195,7 +200,7 @@ export default function EditNotePage() {
         )}
         <RichTextEditor
           content={content}
-          onChange={(html) => { setContent(html); if (!readonly) setDirty(true); }}
+          onChange={(html) => { setContent(html); if (loaded.current && !readonly) setDirty(true); }}
           readonly={readonly}
         />
       </div>
