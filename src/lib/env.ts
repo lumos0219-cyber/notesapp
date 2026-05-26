@@ -17,9 +17,28 @@ export interface PublishedData {
 
 export async function fetchPublishedData(): Promise<PublishedData | null> {
   try {
-    const resp = await fetch('./published.json');
-    if (!resp.ok) return null;
-    return await resp.json();
+    // Load manifest
+    const manifestResp = await fetch('./data/manifest.json');
+    if (!manifestResp.ok) return null;
+    const manifest = await manifestResp.json();
+
+    // Load folders
+    const foldersResp = await fetch('./data/folders.json');
+    const folders = foldersResp.ok ? await foldersResp.json() : [];
+
+    // Load individual notes
+    const noteIds = Object.keys(manifest.notes || {});
+    const notes: PublishedData['notes'] = [];
+    for (const id of noteIds) {
+      try {
+        const noteResp = await fetch(`./data/notes/${id}.json`);
+        if (noteResp.ok) {
+          notes.push(await noteResp.json());
+        }
+      } catch { /* skip failed loads */ }
+    }
+
+    return { folders, notes };
   } catch {
     return null;
   }

@@ -4,6 +4,7 @@ import { db } from '../db';
 import type { Note } from '../types';
 import NoteCard from '../components/NoteCard';
 import { isLocalhost } from '../lib/env';
+import { analyzePublish } from '../lib/publish';
 import { exportAll, importData } from '../lib/transfer';
 
 type SortMode = 'updated-desc' | 'updated-asc' | 'title-asc';
@@ -49,50 +50,30 @@ export default function AllNotesPage() {
   };
 
   const handlePublish = async () => {
-    const allFolders = await db.folders.toArray();
-    const allNotes = await db.notes.toArray();
-    const publishedFolders = allFolders.filter((f) => f.published);
-    const publishedFolderIds = new Set(publishedFolders.map((f) => f.id));
-
-    // Collect descendant folder IDs
-    const queue = [...publishedFolderIds];
-    while (queue.length > 0) {
-      const fid = queue.pop()!;
-      allFolders.filter((f) => f.parentId === fid).forEach((f) => {
-        publishedFolderIds.add(f.id);
-        queue.push(f.id);
-      });
-    }
-
-    const publishedNotes = allNotes.filter(
-      (n) => n.published || (n.folderId && publishedFolderIds.has(n.folderId))
-    );
-
-    // Include ancestor folders needed for tree structure
-    const neededFolderIds = new Set(publishedFolderIds);
-    for (const n of publishedNotes) {
-      if (n.folderId) {
-        let current = allFolders.find((f) => f.id === n.folderId);
-        while (current) {
-          neededFolderIds.add(current.id);
-          current = current.parentId ? allFolders.find((f) => f.id === current!.parentId) : undefined;
-        }
-      }
-    }
-
     try {
+      const plan = await analyzePublish();
+      const total = plan.newNotes.length + plan.modifiedNotes.length + plan.removedNoteIds.length;
+
+      if (total === 0) {
+        alert('没有需要更新的内容');
+        return;
+      }
+
+      const ok = confirm(
+        `确认发布？\n新增 ${plan.newNotes.length} 条，更新 ${plan.modifiedNotes.length} 条，移除 ${plan.removedNoteIds.length} 条`
+      );
+      if (!ok) return;
+
       const resp = await fetch('/api/publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          folders: allFolders.filter((f) => neededFolderIds.has(f.id)),
-          notes: publishedNotes,
-        }),
+        body: JSON.stringify(plan),
       });
-      if (resp.ok) {
-        alert('已生成 published.json！在终端运行 npm run deploy 即可上线。');
+      const result = await resp.json();
+      if (result.ok) {
+        alert('发布成功！等 1-2 分钟后公开站更新。' + (result.deployWarning ? '\n' + result.deployWarning : ''));
       } else {
-        alert('发布失败');
+        alert('发布失败：' + (result.error || '未知错误'));
       }
     } catch {
       alert('无法连接发布服务，请确认在 localhost 运行');
