@@ -3,6 +3,7 @@ export interface Folder {
   name: string;
   parentId: string | null;
   createdAt: number;
+  color?: string;
 }
 
 export interface Attachment {

@@ -13,7 +13,7 @@ class NotesDB extends Dexie {
       notes: 'id, folderId, createdAt, updatedAt',
       corrections: '++id, original',
     }).upgrade(async (tx) => {
-      // Migrate old notes: rename originalImages → images, add folderId + tags
+      // Migrate old notes
       const oldNotes = await tx.table('notes').toArray();
       for (const n of oldNotes) {
         await tx.table('notes').put({
@@ -27,6 +27,11 @@ class NotesDB extends Dexie {
           updatedAt: n.updatedAt || Date.now(),
         });
       }
+    });
+    this.version(4).stores({
+      folders: 'id, parentId, createdAt, color',
+      notes: 'id, folderId, createdAt, updatedAt',
+      corrections: '++id, original',
     });
   }
 

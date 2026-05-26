@@ -64,6 +64,61 @@ export default function FolderBrowsePage() {
     loadData();
   };
 
+  const handleRenameFolder = async (id: string, newName: string) => {
+    await db.folders.update(id, { name: newName });
+    loadData();
+  };
+
+  const handleDeleteFolder = async (folderIdToDelete: string, deleteContents: boolean) => {
+    if (deleteContents) {
+      // Delete folder and all descendants + their notes
+      const allFolders = await db.folders.toArray();
+      const allNotes = await db.notes.toArray();
+
+      const descendantIds = new Set<string>();
+      const queue = [folderIdToDelete];
+      while (queue.length > 0) {
+        const fid = queue.pop()!;
+        descendantIds.add(fid);
+        allFolders.filter((f) => f.parentId === fid).forEach((f) => queue.push(f.id));
+      }
+
+      // Delete all descendant folders
+      for (const fid of descendantIds) {
+        await db.folders.delete(fid);
+      }
+      // Delete all notes in those folders
+      for (const n of allNotes) {
+        if (n.folderId && descendantIds.has(n.folderId)) {
+          await db.notes.delete(n.id);
+        }
+      }
+    } else {
+      // Delete folder only, move contents to parent
+      const folder = await db.folders.get(folderIdToDelete);
+      if (!folder) return;
+      const targetParentId = folder.parentId;
+
+      // Move subfolders
+      const subFolders = await db.folders.where('parentId').equals(folderIdToDelete).toArray();
+      for (const sf of subFolders) {
+        await db.folders.update(sf.id, { parentId: targetParentId });
+      }
+      // Move notes
+      const notesInFolder = await db.notes.where('folderId').equals(folderIdToDelete).toArray();
+      for (const n of notesInFolder) {
+        await db.notes.update(n.id, { folderId: targetParentId });
+      }
+      await db.folders.delete(folderIdToDelete);
+    }
+    loadData();
+  };
+
+  const handleFolderColor = async (id: string, color: string) => {
+    await db.folders.update(id, { color: color || undefined });
+    loadData();
+  };
+
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return;
     await db.folders.add({
@@ -136,7 +191,15 @@ export default function FolderBrowsePage() {
           <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">文件夹</p>
           <div className="space-y-2">
             {folders.map((f) => (
-              <FolderCard key={f.id} id={f.id} name={f.name} />
+              <FolderCard
+                key={f.id}
+                id={f.id}
+                name={f.name}
+                color={f.color}
+                onRename={handleRenameFolder}
+                onDelete={handleDeleteFolder}
+                onColor={handleFolderColor}
+              />
             ))}
           </div>
         </div>
