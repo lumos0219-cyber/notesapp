@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../db';
 import type { Note, Folder, Attachment } from '../types';
@@ -64,51 +64,30 @@ export default function EditNotePage() {
     }
   };
 
-  const isDirty = useCallback(() => {
-    if (!note || readonly) return false;
-    return (
-      title !== note.title ||
-      content !== note.content ||
-      JSON.stringify(images) !== JSON.stringify(note.images) ||
-      JSON.stringify(attachments) !== JSON.stringify(note.attachments || []) ||
-      JSON.stringify([...tags].sort()) !== JSON.stringify([...(note.tags || [])].sort()) ||
-      folderId !== note.folderId
-    );
-  }, [note, readonly, title, content, images, attachments, tags, folderId]);
-
-  // Sync dirty state to sessionStorage so Layout can check it
+  // Sync dirty to sessionStorage for Layout nav guard
   useEffect(() => {
-    if (isDirty()) {
+    if (dirty) {
       sessionStorage.setItem('klog_dirty', '1');
     } else {
       sessionStorage.removeItem('klog_dirty');
     }
-  });
+  }, [dirty]);
 
-  // Clean up dirty flag on unmount (safe navigation via back button)
-  useEffect(() => {
-    return () => {
-      sessionStorage.removeItem('klog_dirty');
-    };
-  }, []);
-
-  // Warn before closing/refreshing browser
+  // Warn on browser close/refresh
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (sessionStorage.getItem('klog_dirty')) {
-        e.preventDefault();
-      }
+      if (dirty) e.preventDefault();
     };
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, []);
+  }, [dirty]);
 
   const handleBack = () => {
-    if (isDirty()) {
+    if (dirty) {
       const ok = confirm('有未保存的修改，确定要离开吗？');
       if (!ok) return;
+      setDirty(false);
     }
-    sessionStorage.removeItem('klog_dirty');
     navigate(folderId ? `/?folder=${folderId}` : '/');
   };
 
@@ -214,7 +193,11 @@ export default function EditNotePage() {
         {!readonly && (
           <p className="text-sm text-gray-400 mb-2">摘录 & 要点</p>
         )}
-        <RichTextEditor content={content} onChange={setContent} readonly={readonly} />
+        <RichTextEditor
+          content={content}
+          onChange={(html) => { setContent(html); if (!readonly) setDirty(true); }}
+          readonly={readonly}
+        />
       </div>
 
       {/* Photos */}
