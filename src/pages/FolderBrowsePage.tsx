@@ -20,6 +20,7 @@ export default function FolderBrowsePage() {
   const [sort, setSort] = useState<SortMode>('updated-desc');
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolder, setShowNewFolder] = useState(false);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   const loadData = useCallback(async () => {
     // Load all folders
@@ -132,6 +133,33 @@ export default function FolderBrowsePage() {
     loadData();
   };
 
+  const sortedFolders = [...folders].sort((a, b) => (a.order ?? a.createdAt) - (b.order ?? b.createdAt));
+
+  const handleFolderDragStart = (index: number) => {
+    setDragIdx(index);
+  };
+
+  const handleFolderDragOver = (e: React.DragEvent, _index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleFolderDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === dropIndex) return;
+
+    const reordered = [...sortedFolders];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(dropIndex, 0, moved);
+
+    // Persist: assign sequential order values
+    for (let i = 0; i < reordered.length; i++) {
+      await db.folders.update(reordered[i].id, { order: i });
+    }
+    setDragIdx(null);
+    loadData();
+  };
+
   const sortedNotes = [...notes].sort((a, b) => {
     if (sort === 'updated-desc') return b.updatedAt - a.updatedAt;
     if (sort === 'updated-asc') return a.updatedAt - b.updatedAt;
@@ -190,16 +218,25 @@ export default function FolderBrowsePage() {
         <div className="mb-4">
           <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">文件夹</p>
           <div className="space-y-2">
-            {folders.map((f) => (
-              <FolderCard
+            {sortedFolders.map((f, i) => (
+              <div
                 key={f.id}
-                id={f.id}
-                name={f.name}
-                color={f.color}
-                onRename={handleRenameFolder}
-                onDelete={handleDeleteFolder}
-                onColor={handleFolderColor}
-              />
+                draggable
+                onDragStart={() => handleFolderDragStart(i)}
+                onDragOver={(e) => handleFolderDragOver(e, i)}
+                onDrop={(e) => handleFolderDrop(e, i)}
+                onDragEnd={() => setDragIdx(null)}
+                className={dragIdx === i ? 'opacity-40' : ''}
+              >
+                <FolderCard
+                  id={f.id}
+                  name={f.name}
+                  color={f.color}
+                  onRename={handleRenameFolder}
+                  onDelete={handleDeleteFolder}
+                  onColor={handleFolderColor}
+                />
+              </div>
             ))}
           </div>
         </div>

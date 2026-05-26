@@ -4,6 +4,7 @@ export interface Folder {
   parentId: string | null;
   createdAt: number;
   color?: string;
+  order?: number;
 }
 
 export interface Attachment {
