@@ -9,8 +9,8 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col">
       <nav className="bg-white border-b border-blue-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-blue-700 no-underline font-mono tracking-wide">
-            Klog
+          <Link to="/" className="text-lg no-underline font-mono tracking-wide">
+            <span className="font-bold text-blue-600">K</span><span className="font-normal text-gray-400">log</span>
           </Link>
           <div className="flex gap-1">
             <Link
