@@ -8,7 +8,7 @@ import NoteCard from '../components/NoteCard';
 import FolderCard from '../components/FolderCard';
 import BreadcrumbNav from '../components/BreadcrumbNav';
 
-type SortMode = 'updated-desc' | 'updated-asc' | 'title-asc';
+type SortMode = 'updated-desc' | 'updated-asc' | 'title-asc' | 'custom';
 
 export default function FolderBrowsePage() {
   const [searchParams] = useSearchParams();
@@ -21,6 +21,7 @@ export default function FolderBrowsePage() {
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [noteDragIdx, setNoteDragIdx] = useState<number | null>(null);
 
   const loadData = useCallback(async () => {
     // Load all folders
@@ -164,13 +165,39 @@ export default function FolderBrowsePage() {
     if (sort === 'updated-desc') return b.updatedAt - a.updatedAt;
     if (sort === 'updated-asc') return a.updatedAt - b.updatedAt;
     if (sort === 'title-asc') return (a.title || '未命名').localeCompare(b.title || '未命名');
+    if (sort === 'custom') return (a.order ?? a.createdAt) - (b.order ?? b.createdAt);
     return 0;
   });
+
+  const handleNoteDragStart = (index: number) => {
+    setNoteDragIdx(index);
+  };
+
+  const handleNoteDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleNoteDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (noteDragIdx === null || noteDragIdx === dropIndex) return;
+
+    const reordered = [...sortedNotes];
+    const [moved] = reordered.splice(noteDragIdx, 1);
+    reordered.splice(dropIndex, 0, moved);
+
+    for (let i = 0; i < reordered.length; i++) {
+      await db.notes.update(reordered[i].id, { order: i });
+    }
+    setNoteDragIdx(null);
+    loadData();
+  };
 
   const sortLabel: Record<SortMode, string> = {
     'updated-desc': '最近更新',
     'updated-asc': '最早更新',
     'title-asc': 'A-Z',
+    'custom': '自定义排序',
   };
 
   return (
@@ -180,7 +207,7 @@ export default function FolderBrowsePage() {
       {/* Sort + Actions bar */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-1">
-          {(['updated-desc', 'updated-asc', 'title-asc'] as SortMode[]).map((m) => (
+          {(['updated-desc', 'updated-asc', 'title-asc', 'custom'] as SortMode[]).map((m) => (
             <button
               key={m}
               onClick={() => setSort(m)}
@@ -262,17 +289,26 @@ export default function FolderBrowsePage() {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {sortedNotes.map((note) => (
-              <NoteCard
+            {sortedNotes.map((note, i) => (
+              <div
                 key={note.id}
-                id={note.id}
-                title={note.title}
-                content={note.content}
-                tags={note.tags}
-                imageCount={note.images.length}
-                updatedAt={note.updatedAt}
-                onDelete={handleDeleteNote}
-              />
+                draggable={sort === 'custom'}
+                onDragStart={() => sort === 'custom' && handleNoteDragStart(i)}
+                onDragOver={(e) => sort === 'custom' && handleNoteDragOver(e)}
+                onDrop={(e) => sort === 'custom' && handleNoteDrop(e, i)}
+                onDragEnd={() => setNoteDragIdx(null)}
+                className={noteDragIdx === i ? 'opacity-40' : ''}
+              >
+                <NoteCard
+                  id={note.id}
+                  title={note.title}
+                  content={note.content}
+                  tags={note.tags}
+                  imageCount={note.images.length}
+                  updatedAt={note.updatedAt}
+                  onDelete={handleDeleteNote}
+                />
+              </div>
             ))}
           </div>
         )}

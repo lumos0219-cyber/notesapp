@@ -38,6 +38,11 @@ class NotesDB extends Dexie {
       notes: 'id, folderId, createdAt, updatedAt',
       corrections: '++id, original',
     });
+    this.version(6).stores({
+      folders: 'id, parentId, createdAt, color, order',
+      notes: 'id, folderId, createdAt, updatedAt, order',
+      corrections: '++id, original',
+    });
   }
 
   async debugDump(): Promise<string> {

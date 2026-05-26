@@ -25,6 +25,7 @@ export interface Note {
   tags: string[];
   createdAt: number;
   updatedAt: number;
+  order?: number;
 }
 
 export interface CorrectionEntry {
