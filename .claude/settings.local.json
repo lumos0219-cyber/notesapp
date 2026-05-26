@@ -1,9 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install *)",
+      "Bash(git clean *)",
+      "Bash(git branch *)",
       "Bash(npm run *)",
-      "Bash(node -e ' *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
