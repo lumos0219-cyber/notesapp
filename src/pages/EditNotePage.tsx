@@ -22,11 +22,9 @@ export default function EditNotePage() {
   const [toast, setToast] = useState('');
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [readonly, setReadonly] = useState(false);
-  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     if (!id) return;
-    setDirty(false);
     db.notes.get(id).then((n) => {
       if (n) {
         setNote(n);
@@ -54,7 +52,6 @@ export default function EditNotePage() {
         folderId,
         updatedAt: Date.now(),
       });
-      setDirty(false);
       setToast('保存成功');
     } catch (err) {
       console.error('[NoteSnap] Failed to save:', err);
@@ -65,30 +62,7 @@ export default function EditNotePage() {
     }
   };
 
-  // Sync dirty to sessionStorage for Layout nav guard
-  useEffect(() => {
-    if (dirty) {
-      sessionStorage.setItem('klog_dirty', '1');
-    } else {
-      sessionStorage.removeItem('klog_dirty');
-    }
-  }, [dirty]);
-
-  // Warn on browser close/refresh
-  useEffect(() => {
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (dirty) e.preventDefault();
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [dirty]);
-
   const handleBack = () => {
-    if (dirty) {
-      const ok = confirm('有未保存的修改，确定要离开吗？');
-      if (!ok) return;
-      setDirty(false);
-    }
     navigate(folderId ? `/?folder=${folderId}` : '/');
   };
 
@@ -130,11 +104,6 @@ export default function EditNotePage() {
         <div className="flex items-center gap-3">
           {toast && (
             <span className="text-sm text-green-600 font-medium">{toast}</span>
-          )}
-          {dirty && (
-            <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full font-medium">
-              未保存
-            </span>
           )}
           {/* Edit / Read-only segmented control */}
           <div className="flex bg-gray-100 rounded-lg p-0.5">
@@ -181,7 +150,7 @@ export default function EditNotePage() {
         <input
           type="text"
           value={title}
-          onChange={(e) => { setTitle(e.target.value); if (note && e.target.value !== note.title) setDirty(true); }}
+          onChange={(e) => setTitle(e.target.value)}
           placeholder="笔记标题"
           className="w-full text-lg font-semibold text-gray-800 px-3 py-2 bg-transparent
                      border-b border-gray-100 focus:outline-none focus:border-blue-300
@@ -196,7 +165,7 @@ export default function EditNotePage() {
         )}
         <RichTextEditor
           content={content}
-          onChange={(html) => { setContent(html); if (note && html.replace(/\s/g,'') !== (note.content||'').replace(/\s/g,'')) setDirty(true); }}
+          onChange={setContent}
           readonly={readonly}
         />
       </div>
