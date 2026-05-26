@@ -14,6 +14,7 @@ export default function AllNotesPage() {
   const [allTags, setAllTags] = useState<string[]>([]);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [sort, setSort] = useState<SortMode>('updated-desc');
+  const [publishing, setPublishing] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,19 +51,21 @@ export default function AllNotesPage() {
   };
 
   const handlePublish = async () => {
+    setPublishing(true);
     try {
       const plan = await analyzePublish();
       const total = plan.newNotes.length + plan.modifiedNotes.length + plan.removedNoteIds.length;
 
       if (total === 0) {
         alert('没有需要更新的内容');
+        setPublishing(false);
         return;
       }
 
       const ok = confirm(
         `确认发布？\n新增 ${plan.newNotes.length} 条，更新 ${plan.modifiedNotes.length} 条，移除 ${plan.removedNoteIds.length} 条`
       );
-      if (!ok) return;
+      if (!ok) { setPublishing(false); return; }
 
       const resp = await fetch('/api/publish', {
         method: 'POST',
@@ -71,13 +74,14 @@ export default function AllNotesPage() {
       });
       const result = await resp.json();
       if (result.ok) {
-        alert('发布成功！等 1-2 分钟后公开站更新。' + (result.deployWarning ? '\n' + result.deployWarning : ''));
+        alert('发布成功！' + (result.deployWarning ? result.deployWarning : '公开站稍后自动更新。'));
       } else {
         alert('发布失败：' + (result.error || '未知错误'));
       }
     } catch {
       alert('无法连接发布服务，请确认在 localhost 运行');
     }
+    setPublishing(false);
   };
 
   const filtered = activeTag
@@ -106,9 +110,10 @@ export default function AllNotesPage() {
             <>
               <button
                 onClick={handlePublish}
-                className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors"
+                disabled={publishing}
+                className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors disabled:opacity-50"
               >
-                发布
+                {publishing ? '发布中...' : '发布'}
               </button>
               <button
                 onClick={exportAll}
