@@ -6,7 +6,7 @@ interface Manifest {
   folders: Record<string, number>; // folderId → createdAt (for tracking)
 }
 
-interface PublishPlan {
+export interface PublishPlan {
   newNotes: Note[];
   modifiedNotes: Note[];
   removedNoteIds: string[];

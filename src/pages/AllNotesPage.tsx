@@ -15,6 +15,7 @@ export default function AllNotesPage() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [sort, setSort] = useState<SortMode>('updated-desc');
   const [publishing, setPublishing] = useState(false);
+  const [preview, setPreview] = useState<{ newNotes: Note[]; modifiedNotes: Note[]; removedNoteIds: string[] } | null>(null);
   const importRef = useRef<HTMLInputElement>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,26 +52,29 @@ export default function AllNotesPage() {
   };
 
   const handlePublish = async () => {
-    setPublishing(true);
     try {
       const plan = await analyzePublish();
       const total = plan.newNotes.length + plan.modifiedNotes.length + plan.removedNoteIds.length;
-
       if (total === 0) {
         alert('没有需要更新的内容');
-        setPublishing(false);
         return;
       }
+      // Show preview modal
+      setPreview(plan);
+    } catch {
+      alert('无法连接发布服务');
+    }
+  };
 
-      const ok = confirm(
-        `确认发布？\n新增 ${plan.newNotes.length} 条，更新 ${plan.modifiedNotes.length} 条，移除 ${plan.removedNoteIds.length} 条`
-      );
-      if (!ok) { setPublishing(false); return; }
-
+  const handleConfirmPublish = async () => {
+    if (!preview) return;
+    setPublishing(true);
+    setPreview(null);
+    try {
       const resp = await fetch('/api/publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(plan),
+        body: JSON.stringify(preview),
       });
       const result = await resp.json();
       if (result.ok) {
@@ -79,9 +83,10 @@ export default function AllNotesPage() {
         alert('发布失败：' + (result.error || '未知错误'));
       }
     } catch {
-      alert('无法连接发布服务，请确认在 localhost 运行');
+      alert('发布失败，请重试');
     }
     setPublishing(false);
+    loadNotes();
   };
 
   const filtered = activeTag
@@ -214,6 +219,72 @@ export default function AllNotesPage() {
               onDelete={handleDelete}
             />
           ))}
+        </div>
+      )}
+      {/* Publish preview modal */}
+      {preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+             onClick={() => setPreview(null)}>
+          <div className="bg-white rounded-xl shadow-xl p-5 mx-4 max-w-sm w-full max-h-[80vh] overflow-y-auto"
+               onClick={(e) => e.stopPropagation()}>
+            <p className="text-base font-semibold text-gray-800 mb-3">确认发布</p>
+
+            {preview.newNotes.length > 0 && (
+              <div className="mb-3">
+                <p className="text-xs text-green-600 font-medium mb-1">
+                  新增 {preview.newNotes.length} 条
+                </p>
+                <ul className="text-xs text-gray-500 space-y-0.5 ml-3">
+                  {preview.newNotes.map((n) => (
+                    <li key={n.id}>+ {n.title || '未命名笔记'}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {preview.modifiedNotes.length > 0 && (
+              <div className="mb-3">
+                <p className="text-xs text-blue-600 font-medium mb-1">
+                  更新 {preview.modifiedNotes.length} 条
+                </p>
+                <ul className="text-xs text-gray-500 space-y-0.5 ml-3">
+                  {preview.modifiedNotes.map((n) => (
+                    <li key={n.id}>~ {n.title || '未命名笔记'}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {preview.removedNoteIds.length > 0 && (
+              <div className="mb-3">
+                <p className="text-xs text-red-500 font-medium mb-1">
+                  移除 {preview.removedNoteIds.length} 条
+                </p>
+                <ul className="text-xs text-gray-400 space-y-0.5 ml-3">
+                  {preview.removedNoteIds.map((id) => (
+                    <li key={id}>- {id.slice(0, 8)}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setPreview(null)}
+                className="flex-1 px-4 py-2 rounded-lg text-sm text-gray-500
+                           hover:bg-gray-100 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleConfirmPublish}
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white
+                           bg-blue-500 hover:bg-blue-600 transition-colors"
+              >
+                确认发布
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
