@@ -117,7 +117,7 @@ export default function FolderCard({ id, name, color, published, onRename, onDel
         >
           <span className="text-sm font-medium text-gray-700 truncate block">
             {name}
-            {published && <span className="ml-1 text-[10px] opacity-60">🔓</span>}
+            {published && <span className="ml-2 text-[10px] text-green-600 font-normal">已公开</span>}
           </span>
         </Link>
       )}
@@ -147,7 +147,7 @@ export default function FolderCard({ id, name, color, published, onRename, onDel
               className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50
                          transition-colors"
             >
-              {published ? '🔒 设为私密' : '🔓 设为公开'}
+              {published ? '设为私密' : '设为公开'}
             </button>
             <button
               onClick={handleClickDelete}
