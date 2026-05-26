@@ -288,14 +288,20 @@ export default function FolderBrowsePage() {
           <div className="text-center py-16">
             <div className="text-5xl mb-3">📝</div>
             <p className="text-gray-500 font-medium mb-1">还没有笔记</p>
-            <p className="text-sm text-gray-400 mb-4">点击右上角创建第一条笔记</p>
-            <Link
-              to={`/notes/new${folderId ? `?folder=${folderId}` : ''}`}
-              className="inline-block bg-blue-500 text-white px-5 py-2 rounded-xl text-sm
-                         font-medium hover:bg-blue-600 transition-colors no-underline"
-            >
-              创建笔记
-            </Link>
+            {isLocalhost() ? (
+              <>
+                <p className="text-sm text-gray-400 mb-4">点击右上角创建第一条笔记</p>
+                <Link
+                  to={`/notes/new${folderId ? `?folder=${folderId}` : ''}`}
+                  className="inline-block bg-blue-500 text-white px-5 py-2 rounded-xl text-sm
+                             font-medium hover:bg-blue-600 transition-colors no-underline"
+                >
+                  创建笔记
+                </Link>
+              </>
+            ) : (
+              <p className="text-sm text-gray-400">暂无公开笔记</p>
+            )}
           </div>
         ) : (
           <div className="space-y-2.5">
