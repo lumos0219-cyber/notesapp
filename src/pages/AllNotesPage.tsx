@@ -84,7 +84,7 @@ export default function AllNotesPage() {
           <input
             ref={importRef}
             type="file"
-            accept=".notesnap,application/json"
+            accept=".klog,application/json"
             className="hidden"
             onChange={handleImport}
           />

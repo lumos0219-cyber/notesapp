@@ -6,11 +6,11 @@ export interface OcrProgress {
 }
 
 function getApiKey(): string {
-  return localStorage.getItem('notesnap_google_api_key') || '';
+  return localStorage.getItem('klog_google_api_key') || '';
 }
 
 export function saveApiKey(key: string): void {
-  localStorage.setItem('notesnap_google_api_key', key.trim());
+  localStorage.setItem('klog_google_api_key', key.trim());
 }
 
 export function hasApiKey(): boolean {

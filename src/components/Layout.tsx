@@ -10,7 +10,7 @@ export default function Layout() {
       <nav className="bg-white border-b border-blue-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="text-lg font-semibold text-blue-700 no-underline">
-            NoteSnap
+            Klog
           </Link>
           <div className="flex gap-1">
             <Link

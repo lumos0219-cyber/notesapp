@@ -7,7 +7,7 @@ class NotesDB extends Dexie {
   corrections!: Table<CorrectionEntry, number>;
 
   constructor() {
-    super('NotesAppDB');
+    super('KlogDB');
     this.version(3).stores({
       folders: 'id, parentId, createdAt',
       notes: 'id, folderId, createdAt, updatedAt',

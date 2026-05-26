@@ -11,8 +11,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'NoteSnap - 笔记电子化',
-        short_name: 'NoteSnap',
+        name: 'Klog - 笔记电子化',
+        short_name: 'Klog',
         description: '拍下纸质笔记，自动转为电子版',
         theme_color: '#1976D2',
         background_color: '#F5F7FA',

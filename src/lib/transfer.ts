@@ -25,7 +25,7 @@ export async function exportAll(): Promise<void> {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `notesnap-${new Date().toISOString().slice(0, 10)}.notesnap`;
+  a.download = `klog-${new Date().toISOString().slice(0, 10)}.klog`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -60,7 +60,7 @@ export async function exportFolder(folderId: string): Promise<void> {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `notesnap-${folderName}.notesnap`;
+  a.download = `klog-${folderName}.klog`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -76,7 +76,7 @@ export async function importData(json: string): Promise<ImportResult> {
   try {
     data = JSON.parse(json);
   } catch {
-    throw new Error('文件格式无效，请确认是 .notesnap 文件');
+    throw new Error('文件格式无效，请确认是 .klog 文件');
   }
 
   if (!data.version || !Array.isArray(data.folders) || !Array.isArray(data.notes)) {
